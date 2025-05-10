@@ -1,0 +1,21 @@
+# React Native
+node_modules/
+android/.gradle/
+android/app/build/
+ios/Pods/
+ios/build/
+*.iml
+*.log
+*.keystore
+*.jks
+*.hprof
+
+# OS and IDE
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# Testing
+coverage/
+__tests__/results/
