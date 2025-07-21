@@ -71,6 +71,35 @@ import UIKit
  
  id is a pointer to any type, but unlike void * it always points to an Objective-C object. For example, you can add anything of type id to an NSArray, but those objects must respond to retain and release .
  
+ // MARK: - id vs instancetype vs self vs super — Explained
+
+ id is a generic object pointer that can point to any Objective-C object without knowing its class at compile time.
+ id obj = @"Hello";
+ [obj uppercaseString]; // works, but compiler doesn't check it
+ 
+ 2. instancetype (Compile-time Return Type)
+ 
+ Definition:
+ instancetype is used to specify that a method returns an instance of the current class type.
+ 
+ + (instancetype)myObject;  // returns same type as the class
+ 
+ 3. self (Current Instance)
+ self refers to the current object instance within a class method or instance method.
+ 
+ - (void)sayHello {
+     NSLog(@"Hello from %@", self);  // refers to current instance
+ }
+
+ 4. super (Parent Class Call)
+ super is used to call a method defined in the superclass, not the current class.
+ 
+ - (void)viewDidLoad {
+     [super viewDidLoad];  // calls UIViewController's method
+ }
+
+ 📌 Gives type-safety and code completion in Xcode.
+ 
  // MARK: - Does Objective-C have function overloading?
  
  objective-C does not support method overloading, so you have to use different method names.
@@ -78,5 +107,15 @@ import UIKit
  // MARK: - What is the role of the @autoreleasepool
  
  The @autoreleasepool block in Objective-C is used to manage the autorelease pool, which is responsible for managing autoreleased objects. Autoreleased objects are those whose memory will be automatically released at the end of the current run loop iteration.
+ 
+ // MARK: - .h and .m Files in Objective-C
+ 
+ What is .h file?
+ 
+ .h stands for Header File — It declares the interface of your class: properties, methods, constants.
+ 
+ What is .m file?
+ 
+ .m stands for Implementation File — It contains the actual code (implementation) of the methods declared in the .h file.
  
  */

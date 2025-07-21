@@ -111,7 +111,7 @@ import UIKit
 
 /*
 
- Combine is Apple’s reactive framework introduced in iOS 13. It lets you:
+ Combine is a framework by Apple that helps you manage asynchronous code (like API calls, timers, text field inputs) using Publishers and Subscribers.
 
      Handle asynchronous code
      Chain events
@@ -120,12 +120,12 @@ import UIKit
  
  🔑 Combine Main Components
  
- Publisher    Emits values over time
- Subscriber    Receives those values
- Operators    Transforms the data (map, filter, debounce, etc.)
+ Publisher    Something that sends data over time, like a text field or API.
+ Subscriber    Something that receives the data and reacts to it.
+ Operators    Steps that change or filter the data (like map, filter).
  Subject    Special publisher you control manually (PassthroughSubject, CurrentValueSubject)
- @Published    Property wrapper for automatic UI updates (used in SwiftUI)
- AnyCancellable    Used to manage subscription lifecycle (avoid memory leaks)
+ @Published    SwiftUI property that auto-updates UI when value changes.
+ AnyCancellable    A token that stores your subscription and cancels it when no longer needed.
  
  ✅ Basic Combine Flow
  
@@ -146,30 +146,32 @@ import UIKit
  🔁 Important Combine Operators
  
  Operator    What It Does
- map    Transforms value
- filter    Filters values based on condition
- debounce    Waits before emitting (good for search)
- throttle    Limits frequency of emissions
- retry(_:)    Automatically retry on failure
- catch    Handles errors by switching to backup logic
- flatMap    Flattens nested publishers
- combineLatest    Combines values from two publishers
+ 
+ map    Transforms value / Change each value (like uppercase a string).
+ filter    Filters values based on condition / Skip values that don’t match a condition.
+ debounce    Waits before emitting (good for search) / Wait before sending value (e.g., 0.5 sec after typing stops).
+ throttle    Limits frequency of emissions / Limit how often values are sent.
+ retry(_:)    Automatically retry on failure / Try again if something fails.
+ catch    Handles errors by switching to backup logic / Handle an error by switching to backup logic.
+ flatMap    Flattens nested publishers / Combine nested publishers into one stream.
+ combineLatest    Combines values from two publishers / v
  
  
  🎯 Subjects in Combine (Very Important for Interviews)
- 1️⃣ PassthroughSubject
+ 1️⃣ PassthroughSubject 📍 Use for: Button taps, notifications, one-time events
      Does not hold any value
      Sends new values manually
-     Does not emit old values to new subscribers
+     Sends only new values, doesn't remember old ones.
  
  ✅ Use case: Button taps, fire-once actions
  let subject = PassthroughSubject<String, Never>()
  subject.sink { print("🔔", $0) }.store(in: &cancellables)
  subject.send("Hello") // Emits only to active subscribers
 
- 2️⃣ CurrentValueSubject
+ 2️⃣ CurrentValueSubject 📍 Use for: Keeping shared state like login status
      Holds the latest value
      New subscribers immediately receive the last value
+     Remembers latest value and sends it to any new subscriber.
  
  ✅ Use case: Track shared state (e.g. user login state)
  let subject = CurrentValueSubject<String, Never>("Initial")
@@ -218,6 +220,24 @@ import UIKit
  
  How does Combine handle threading?
     receive(on:) moves execution to desired thread (like RunLoop.main for UI).
+ 
+     What is .sink in Combine?    .sink is used to subscribe to a publisher. It lets you receive values and completion events. It returns an AnyCancellable.
+     What is receiveValue in .sink?    The closure that handles the actual data from the publisher (e.g., decoded API response).
+     What is receiveCompletion in .sink?    A closure that is called when the stream is either finished or failed (used to handle errors or finish event).
+     What is receive(on:)?    It changes the thread where the subscriber receives data. Mostly used to update UI on the main thread.
+     What is .subscribe(on:)?    It defines which thread the publisher runs on, e.g., background for networking.
+     What is Future in Combine?    A Future is a one-time publisher that emits a single value or error, usually used for async operations like an API or database fetch.
+     How does Future differ from normal Publisher?    Future emits just one value and then completes. Other publishers may emit multiple values over time.
+     What is a Promise in Combine?    It's a closure inside Future that you call to either succeed or fail with a value. You complete the future manually.
+     Example of Future + Promise?    See below:
+     Future<String, Error> { promise in
+     if success { promise(.success("Done")) } else { promise(.failure(MyError)) }
+     }
+     When to use Future?    When wrapping non-Combine async APIs (e.g., using completion handlers) inside Combine flow.
+     Can .sink fail silently?    Yes. If you don't handle receiveCompletion, you may miss error handling, so both closures are important.
+     What's the difference between .sink and .assign?    .sink lets you perform custom logic, .assign just sets the value to a property.
+     Why store .sink() in AnyCancellable?    To retain the subscription; otherwise, it will cancel immediately.
+     What happens if you don’t store your subscription?    The publisher will cancel immediately, and you won’t receive any values.
 
      Publisher    Emits values
      Subscriber    Receives values

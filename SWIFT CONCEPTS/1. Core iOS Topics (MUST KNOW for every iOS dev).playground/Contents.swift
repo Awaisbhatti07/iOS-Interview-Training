@@ -466,6 +466,45 @@ class LazyViewController: UIViewController {
 
 // Here, label will not be created when the class is initialized. It will be created only when it's accessed, like: view.addSubview(label) // Now it's created
 
+// MARK: - What is Delegate in Swift?
+/*
+ 
+ Explanation
+    Delegate is a way to pass data or messages from one screen (object) to another, usually from child to parent. -> One-to-one communication from child to parent.
+
+ 🔧 Why use it?
+     To inform parent about something that happened in the child.
+     To keep code separate and clean.
+     To reuse code (make components reusable).
+
+ Why weak in delegate?
+    👉 To avoid memory leaks (retain cycles) between parent and child.
+
+ */
+
+// MARK: - What is NotificationCenter in Swift?
+/*
+ 
+ Explanation
+ You want to broadcast data or event to multiple observers.
+
+ 🔧 Why use it?
+    Loose coupling (e.g., update multiple screens after login).
+
+ */
+
+// MARK: - KVC (Key-Value Coding) & KVO (Key-Value Observing)
+/*
+ 
+ 🔹 KVC – Set/Get property using strings
+     person.setValue("Ali", forKey: "name")
+     let name = person.value(forKey: "name") as? String
+
+ 🔹 KVO – Observe property changes (Old way)
+        A mechanism to observe property changes and perform actions automatically when values change.
+
+ */
+
 // -------------------------------------------------------------------------------------------------------- //
 
 // MARK: - 📲 UIKit Fundamentals
@@ -659,4 +698,24 @@ class AutoLayoutController: UIViewController {
 
  */
 
+// MARK: - 9. AppDelegate vs SceneDelegate in iOS — Explained Simply for Interviews
+/*
+ 
+ Explanation:
+     
+    ✅ AppDelegate (Before iOS 13)
+ 
+     Responsibility      Example
+     App launch/setup    didFinishLaunchingWithOptions
+     App goes to background/foreground    applicationDidEnterBackground
+     Handling push notifications    didRegisterForRemoteNotifications
+     Universal Links, etc.    Handled in AppDelegate
 
+ ✅ SceneDelegate (iOS 13+)
+ 
+     Responsibility    Example
+     Creating UI on launch    scene(_:willConnectTo:)
+     Scene enters background    sceneDidEnterBackground(_:)
+     Scene becomes active/inactive    sceneDidBecomeActive(_:)
+ 
+ */
