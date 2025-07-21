@@ -1,148 +1,298 @@
 import UIKit
+import PlaygroundSupport
 
-// MARK: - Classes
+PlaygroundPage.current.needsIndefiniteExecution = true
+
+//MARK: - Concurrency
+
 /*
- 
- Key Features:
+1- The fact of two or more events or circumstances hapenning or existing at the same time.
+2- It is th execution of the multiple instructons sequences at the same time.
+*/
 
- - Reference type: Multiple variables can reference the same instance.
- - Inheritance: Supports inheritance, enabling a hierarchy of classes.
- - ARC-managed memory: Instances are managed by Automatic Reference Counting (ARC) for memory management.
- - Mutability: Instances can be mutable or immutable (depending on whether properties are defined as let or var).
- - Identity: Classes have a unique identity (=== can be used to compare references).
+/* Problems with Concurrency
  
- Use Cases:
-
- - When you need shared, mutable state.
- - For complex hierarchies using inheritance or polymorphism.
- - When ARC (reference counting) is needed for lifecycle management
+ 1- Dirty Read Problem
+ 2- Unrepeatable Read Problem
+ 3- Lost Update Problem
+ 4- Phantom Read Problen
+ 
+ Having Data Inconsistency
  
  */
 
-class Vehicle {
-    var name: String
-    init(name: String) {
-        self.name = name
-    }
-}
-
-let car1 = Vehicle(name: "Car")
-let car2 = car1 // Both reference the same object
-car2.name = "Truck"
-print(car1.name) // Output: "Truck"
+// Prallelism/Parallel: Use of multiple processing elements simultaneously for solving any problem
 
 
-// MARK: - Structs
+/* Concurrency in iOS */
+
+/*
+ 1- Achieving Multithreading by creating threads manually
+ 2- Grand Central Dispatch
+ 3- Operation Queues
+ 4- Modern Concurreny in Swift
+ */
+
+
+// MARK: - Achieving Multithreading by creating threads manually
+//class CustomThread {
+//
+//    // return sum of two number
+//    func createThread() {
+//        let thread: Thread = Thread(target: self, selector: #selector(threadSelection), object: nil)
+//        thread.start()
+//    }
+//
+//    @objc func threadSelection() {
+//        print("Custom Thread in Action")
+//    }
+//}
+//
+//var customThread = CustomThread()
+//customThread.createThread()
+
+/* Manuall Thread Problems
+
+ 1- Responsibility to manage the thread with system conditions.
+ 2- Deallocation once they have finish execution.
+ 3- Improper management may cause memory leakage in app.
+ 4- Maintaining the order of execution.
+ 
+*/
+
+// MARK: - GRAND CENTERAL DISPATCH
 /*
  
- Key Features:
-
- - Value type: Each variable gets its own unique copy.
- - No inheritance: Cannot inherit from other structs.
- - Stack-allocated: Typically more efficient for smaller data types.
- - Copy-on-write semantics: When passed around, a new copy is created unless explicitly shared.
- - Immutability by default: Mutating a struct’s properties requires marking the method as mutating.
+ // MARK: - WHAT IS GRAND CENTERAL DISPATCH
  
- Use Cases:
+ 1- GCD is a queue based API that allows to execute closures / Events on workers pools in the FIFO order.
 
- - When you want immutability and thread safety by default.
- - For simple data models that don’t require inheritance.
- - For performance-sensitive scenarios where avoiding ARC overhead is crucial.
+ 2- Decides which thread is used to execute a task is handled by GCD not the developer and execute them on an appropriate Dispatch Queue.
+
+ 3- Dispatch Queue is the abstraction layer on the top of the queue
+
+ 4- GCD Manages a collection of the Dispatch Queues. They are usually referred as queues. The work submitted to these Dispatch queues is executed on a pool thread.
+
+ 5- A Dispatch Queue executes tasks either serially or concurrently but always in a fifo order
+ 
+ 6- An application can submit a task to queue in the form of blocks either synchronously or asynchronously.
+ 
+ //MARK: - Synchronous vs Asynchronous
+ 
+ Synchronous: Block the execution till this task is completed or Tasks are executed one after another in a sequential manner. Each task must complete before the next one starts.
+ 
+ Asynchronous: Continue the execution of current task while new task will execute asynchronously. or Tasks are executed independently, allowing other tasks to continue without waiting for the current one to finish.
+ 
+ //MARK: - Serial Queue vs Concurrent Queue
+ 
+ Serial: One Task at time
+ Concurrent: Mutiple Task at a time
+ 
+ Even for concurrent, tasks will be dequeued serially, in a fixed order i.e FIFO statring each of the task after the previous one
+ 
+ Serial/Concurrent affects the destination queue to which you are dispatching.
+ 
+ Sync/Async  affects the current thread from which you are dispatching.
  
  */
 
-struct Point {
-    var x: Int
-    var y: Int
-    
-    mutating func moveBy(dx: Int, dy: Int) {
-        x += dx
-        y += dy
-    }
+//var counter = 1
+//DispatchQueue.main.async { // Main queue is a serial Queue
+//    for i in 0...3 {
+//        counter = i
+//        print("\(counter)")
+//    }
+//}
+//
+//for i in 4...6 {
+//    counter = i
+//    print("\(counter)")
+//}
+//
+//DispatchQueue.main.async {
+//    counter = 9
+//    print("\(counter)")
+//}
+
+// MARK: - DISPATCH QUEUES
+/*
+ 
+// MARK: - MAIN QUEUE
+ 
+ 1- its a system Created Queue
+ 2- it is serial in nature
+ 3- Uses Main Thread
+ 4- UI Kit is tied to main thread, so all UI related operations must be performed on Main Queue
+ 
+ // MARK: - GLOBAL CONCURRENT QUEUE
+ 
+ 1- its a system Created Queue
+ 2- it is Concurent in Nature
+ 3- Do not use main thread
+ 4- Priorities are decided through QOS (Quality of services)
+ 
+*/
+
+DispatchQueue.main.async {
+    print(Thread.isMainThread ? "Execution on main Thread" : "Execution on someother thread")
 }
 
-var point1 = Point(x: 0, y: 0)
-var point2 = point1 // Copy of `point1`
-point2.moveBy(dx: 5, dy: 5)
-print(point1.x) // Output: 0
-
-// MARK: - Actors
+DispatchQueue.global(qos: .userInitiated).async {
+    print(Thread.isMainThread ? "Execution on main Thread" : "Execution on global concurrent queue")
+}
 
 /*
  
- Key Features:
-
- - Reference type: Similar to classes, actors are reference types.
- - Concurrency safety: Provides a built-in way to manage data across multiple threads safely.
- - Isolation: Protects mutable state by serializing access to its properties and methods.
- - No inheritance: Does not support class-style inheritance but can adopt protocols.
- - Asynchronous interactions: Designed to be used with await.
+ // MARK: - QUALITY OF SERVICES
  
- Use Cases:
-
- - When working with shared mutable state in concurrent environments.
- - For encapsulating state that needs to be accessed from multiple threads.
+ 1- User interactive -> For Animations
+ 2- User Initiated -> Used when we requires Immediate Results any kind of data that is required to render UI.
+ 3- Utility -> Long Running Tasks (Eg Downloading)
+ 4- Background -> Not Visible to Users (Eg creating backups, restoring something)
  
  */
 
-actor BankAccount {
-    private var balance: Int = 0
-
-    func deposit(amount: Int) {
-        balance += amount
-    }
-
-    func getBalance() -> Int {
-        return balance
+DispatchQueue.global(qos: .background).async {
+    for i in 11...21{
+        print(i)
     }
 }
 
-let account = BankAccount()
-Task {
-    await account.deposit(amount: 100)
-    print(await account.getBalance()) // Output: 100
+DispatchQueue.global(qos: .userInteractive).async {
+    for i in 0...10 {
+        print(i)
+    }
 }
 
-// MARK: - Protocols with Associated Types
+// MARK: - DISPATCH GROUP & DISPATCH WORK ITEMS
 
 /*
  
- Protocols can declare associated types, which are placeholders for a concrete type that will be specified by the conforming type. These are useful for defining relationships between types in protocols.
-
- Key Features:
-
-- Declared with the associatedtype keyword.
-- Enable protocols to define flexible type relationships.
-- Conforming types determine the actual type for the associated type.
+ // MARK: - DISPATCH GROUP
  
- // MARK: - Advantages:
-
- 1- Allow polymorphism and generality for various types that conform to the protocol.
- 2- Useful for designing APIs with complex type relationships.
+ 1- Multiple tasks can be Grouped Together
+ 2- We can wait for the tasks to be finished or can continue with some other tasks and can get notified when tasks in the group completes.
  
- // MARK: - Limitations:
-
- 1- Erasure required for heterogeneous collections (Any or type erasure needed).
- 2- Can't use protocols with associated types directly as the type of a variable without type erasure.
+ Functions that its provided
+ 
+ 1- enter
+ 2- leave()
+ 3- wait()
+ 4- notify()
+ 
+ Example reference in Folder
+ 
+ // MARK: - DISPATCH WORK ITEM
+ 
+ 1- Encapsulates a block of code.
+ 2- Can be dispatched on both Dispatch Queue and Dispatch Group.
+ 3- Provides the flexibility to cancel the task (unless execution has started).
+ 
+ 
+ CANCEL:
+ 
+ 1- if it is set true before execution, task wont execute.
+ 2- if work item is cancelled during execution, 'cancel' will return true but execution won't abort.
+ 3- wait() and notify work the same.
+ 
+ example usage if user want to make an api call on every character when searching
+ 
+ Example reference in Folder
  
  */
 
-protocol Container {
-    associatedtype Item
-    var items: [Item] { get }
-    mutating func add(item: Item)
-}
+// MARK: - OPERATION QUEUE
 
-struct IntContainer: Container {
-    var items = [Int]()
-    mutating func add(item: Int) {
-        items.append(item)
+/*
+ 
+ // MARK: - DEFINATION :-
+ 
+ An Operation Queue (or OperationQueue in Swift) is a high-level abstraction in iOS and macOS development for managing the execution of operations in a concurrent manner. It is part of the Foundation framework and works alongside the Operation class to provide a robust mechanism for handling multithreaded tasks.
+
+ // MARK: - Key Features of OperationQueue:
+ 
+ 1- Concurrency Management:
+
+ - It allows multiple operations to execute concurrently.
+ - The degree of concurrency can be controlled via the maxConcurrentOperationCount property.
+ 
+ 2- Operation Dependencies:
+
+ - Operations can have dependencies, meaning one operation won't start until its dependencies have completed.
+ - This is particularly useful for tasks that must be executed in a specific order.
+ 
+ 3- Automatic Thread Management:
+
+ - The queue manages threads for executing operations, so you don't need to handle threads directly.
+ - Operations are executed on background threads by default.
+ 
+ 4- Cancelation and Suspension:
+
+ - You can cancel individual operations or the entire queue.
+ - The queue can also be suspended and resumed.
+ 
+ 5- Queue Prioritization:
+
+ - Operations can have different priority levels using the queuePriority property of Operation.
+ 
+ 6- Integration with GCD:
+
+ - Internally, OperationQueue uses Grand Central Dispatch (GCD) but provides a higher-level API with additional features like dependencies.
+ 
+ 
+ // MARK: - OPERATIONAL QUEUE STATES
+ 
+ open var isReady: Bool { get }
+ open var isExecuting: Bool { get }
+ open var isCancelled: Bool { get }
+ open var isFinished: Bool { get }
+ 
+ */
+
+// Define an operation
+class MyOperation: Operation {
+    override func main() {
+        if isCancelled { return } // Handle cancellation
+        print("Operation started on thread: \(Thread.current)")
+        sleep(2) // Simulate work
+        print("Operation completed on thread: \(Thread.current)")
     }
 }
 
-struct StringContainer: Container {
-    var items = [String]()
-    mutating func add(item: String) {
-        items.append(item)
-    }
+// Create an OperationQueue
+let operationQueue = OperationQueue()
+
+// Add operations to the queue
+operationQueue.addOperation(MyOperation())
+operationQueue.addOperation {
+    // Using a block operation
+    print("Block operation started on thread: \(Thread.current)")
+    sleep(1)
+    print("Block operation completed on thread: \(Thread.current)")
 }
+
+// Set max concurrent operations (optional)
+operationQueue.maxConcurrentOperationCount = 2
+
+/*
+ 
+ MARK: - Common Properties and Methods of OperationQueue:
+ 
+ 1- Properties:
+ 
+ maxConcurrentOperationCount: Controls the number of concurrent operations.
+ isSuspended: Pauses the queue when set to true.
+ operations: Returns the operations currently in the queue.
+ operationCount: Returns the number of operations in the queue.
+ 
+ 2- Methods:
+ addOperation(_:): Adds an operation to the queue.
+ addOperations(_:waitUntilFinished:): Adds multiple operations and optionally waits for their completion.
+ cancelAllOperations(): Cancels all operations in the queue.
+ 
+ MARK: - When to Use OperationQueue:
+ When you need fine-grained control over task dependencies.
+ For tasks that require concurrent execution but might involve cancellation, prioritization, or suspension.
+ When you want a simpler API compared to directly managing threads with GCD.
+ 
+ */
