@@ -373,130 +373,212 @@ func factorial(_ n: Int) -> Int {
 
 print(factorial(5)) // Output: 120
 
-// MARK: - 9. Trees
-/*
- 
- A Tree is a hierarchical data structure made of nodes, where each node can have children.
+// MARK: - Introduction to Trees
+// A Tree is a hierarchical data structure consisting of nodes connected by edges.
+// - Each node holds a value and can have children.
+// - The topmost node is the **root**.
+// - Nodes with no children are **leaves**.
+// - Trees are used to represent hierarchical data, like file systems, organization charts, or decision trees.
 
- Types:
-     Binary Tree → Each node has at most 2 children
-     BST (Binary Search Tree) → Left < Root < Right
-     Heap → Min-Heap or Max-Heap (used in priority queues)
-     Trie → Special tree for searching words (prefix trees)
+// MARK: - Binary Tree
+// Definition:
+// A Binary Tree is a tree where each node has **at most two children**: a left child and a right child.
+// There are no rules about the values of nodes—they can be arranged in any order.
 
-*/
+// Why Use Binary Trees?
+// - Represent hierarchical relationships (e.g., family trees, company hierarchies).
+// - Useful in scenarios where data doesn't need to follow a specific order.
+// - Basis for specialized trees like Binary Search Trees, Heaps, or Tries.
 
-// MARK: - 9A. Binary Tree
+// Example Binary Tree:
+//       10
+//      /  \
+//    20    30
+//   /        \
+//  40        50
+// - Root: 10
+// - Left child of 10: 20
+// - Right child of 10: 30
+// - Left child of 20: 40
+// - Right child of 30: 50
 
-/*
- 
- A binary tree is a structure where every node has up to 2 children, but there's no rule about their values.
+// MARK: - Binary Search Tree (BST)
+// Definition:
+// A Binary Search Tree is a binary tree with a specific rule:
+// - For any node, the **left child** has a value **smaller** than the node.
+// - The **right child** has a value **larger** than the node.
 
-       10
-      /  \
-    20   30
-    /      \
-   40       50
+// Why Use BST?
+// - Efficient for searching, insertion, and deletion (average O(log n) time complexity).
+// - In-order traversal produces values in sorted order.
+// - Used in applications like databases, autocomplete systems, and priority queues.
 
- 
-*/
+// Example BST:
+//       25
+//      /  \
+//    15    50
+//   / \    / \
+//  10  22 35  70
+// - Root: 25
+// - Left subtree (values < 25): 15, 10, 22
+// - Right subtree (values > 25): 50, 35, 70
+// - For node 15: left child 10 (< 15), right child 22 (> 15)
+// - For node 50: left child 35 (< 50), right child 70 (> 50)
 
-// Step 1: Define the TreeNode structure
+// MARK: - TreeNode Class
+// Defines a node used for both Binary Trees and BSTs.
 class TreeNode {
-    var value: Int              // Node ka value
-    var left: TreeNode?         // Left child
-    var right: TreeNode?        // Right child
+    var value: Int              // The data stored in the node (integer in this case)
+    var left: TreeNode?        // Pointer to left child (optional, can be nil)
+    var right: TreeNode?       // Pointer to right child (optional, can be nil)
 
     init(_ value: Int) {
         self.value = value
+        self.left = nil        // Initialize with no children
+        self.right = nil
     }
 }
 
-// Step 2: Create tree nodes manually (no order rules)
-let root = TreeNode(10)            // Root node
-root.left = TreeNode(20)           // Left child of root
-root.right = TreeNode(30)          // Right child of root
-root.left?.left = TreeNode(40)     // Left child of 20
-root.right?.right = TreeNode(50)   // Right child of 30
+// MARK: - Binary Tree Implementation
 
-// Step 3: Traverse the tree (In-Order) => left → root → right
+// Why Manual Creation?
+// - For a general binary tree, we manually create nodes to demonstrate structure without ordering rules.
+// - Useful for testing or when specific tree shapes are needed.
+
+// Create Binary Tree Manually
+let root = TreeNode(10)            // Create root node with value 10
+root.left = TreeNode(20)           // Left child of root (value 20)
+root.right = TreeNode(30)          // Right child of root (value 30)
+root.left?.left = TreeNode(40)     // Left child of 20 (value 40)
+root.right?.right = TreeNode(50)   // Right child of 30 (value 50)
+
+// Diagram of Created Binary Tree:
+//       10
+//      /  \
+//    20    30
+//   /        \
+//  40        50
+
+// MARK: - Traversals
+// Traversals are ways to visit all nodes in a tree. Common types:
+// 1. In-Order (Left -> Root -> Right): Useful for BSTs to get sorted order.
+// 2. Pre-Order (Root -> Left -> Right): Useful for copying trees or getting prefix notation.
+// 3. Post-Order (Left -> Right -> Root): Useful for deleting trees or evaluating expressions.
+
+// In-Order Traversal
+// Why Use In-Order?
+// - Visits nodes in Left -> Root -> Right order.
+// - For BSTs, produces values in ascending order.
+// - For general binary trees, explores left subtree, then root, then right subtree.
 func inOrderTraversal(_ node: TreeNode?) {
-    if node == nil { return } // Stop when node is nil
+    if node == nil { return } // Base case: stop if node is nil
 
-    inOrderTraversal(node?.left)      // Visit left subtree
-    print(node!.value)                // Print root
-    inOrderTraversal(node?.right)     // Visit right subtree
+    inOrderTraversal(node?.left)      // Recursively visit left subtree
+    print(node!.value, terminator: " ") // Process current node (print value)
+    inOrderTraversal(node?.right)     // Recursively visit right subtree
 }
 
-// Step 4: Call the traversal function
-print("📌 In-Order Traversal of Binary Tree:")
-inOrderTraversal(root)
-// Output: 40 20 10 30 50
+// Pre-Order Traversal
+// Why Use Pre-Order?
+// - Visits Root first, useful for creating a copy of the tree or getting a prefix expression.
+func preOrderTraversal(_ node: TreeNode?) {
+    if node == nil { return } // Base case: stop if node is nil
 
-// MARK: - 9A. Binary Tree
+    print(node!.value, terminator: " ") // Process current node (print value)
+    preOrderTraversal(node?.left)       // Recursively visit left subtree
+    preOrderTraversal(node?.right)      // Recursively visit right subtree
+}
 
-/*
- 
- A Binary Search Tree (BST) is a special kind of binary tree where:
+// Post-Order Traversal
+// Why Use Post-Order?
+// - Visits Left -> Right -> Root, useful for deleting trees or evaluating postfix expressions.
+func postOrderTraversal(_ node: TreeNode?) {
+    if node == nil { return } // Base case: stop if node is nil
 
- 📌 Every node follows this rule:
-     Left child has smaller value, and
-     Right child has larger value than the current node.
- 
- 25
-    /  \
-  15    50
- / \    / \
-10  22  35  70
- 
- 
- or
- 
- 
- 20
-/  \
-10    30
-/  \     \
-5   15     40
+    postOrderTraversal(node?.left)      // Recursively visit left subtree
+    postOrderTraversal(node?.right)     // Recursively visit right subtree
+    print(node!.value, terminator: " ") // Process current node (print value)
+}
 
+// MARK: - Binary Search Tree Implementation
 
- Here’s how the BST rule is working:
-     10 is on the left of 20 → ✅ smaller than 20
-     30 is on the right of 20 → ✅ greater than 20
-     5 and 15 are on left of 10 → ✅ less than 10
-     40 is on the right of 30 → ✅ greater than 30
- 
-*/
-
-// Step 1: Use same TreeNode class from above
-
-// Step 2: Insert value into BST following BST rules
+// Insert into BST
+// Why Use Insert Function?
+// - Maintains BST property: left child < node < right child.
+// - Recursively finds the correct position for a new value.
+// - Handles empty trees and leaf nodes by creating new nodes.
 func insertBST(_ root: TreeNode?, _ value: Int) -> TreeNode {
     if root == nil {
-        // If tree is empty or we reached a leaf → create new node
+        // If tree is empty or at a leaf, create and return a new node
         return TreeNode(value)
     }
 
     if value < root!.value {
-        // Value is less → go left
+        // Value is less than current node, insert into left subtree
         root!.left = insertBST(root!.left, value)
     } else {
-        // Value is greater → go right
+        // Value is >= current node, insert into right subtree
+        // Note: This code places equal values in the right subtree
         root!.right = insertBST(root!.right, value)
     }
 
-    return root!
+    return root! // Return current node to maintain tree structure
 }
 
-// Step 3: Create BST by inserting values one-by-one
+// Create BST by Inserting Values
 var bstRoot: TreeNode? = nil
 let bstValues = [25, 15, 50, 10, 22, 35, 70]
 
+// Insert values one-by-one to build the BST
 for value in bstValues {
     bstRoot = insertBST(bstRoot, value)
 }
 
-// Step 4: Traverse BST (In-Order → sorted output)
-print("📌 In-Order Traversal of BST:")
-inOrderTraversal(bstRoot)
-// Output: 10 15 22 25 35 50 70
+// Diagram of Created BST:
+//       25
+//      /  \
+//    15    50
+//   / \    / \
+//  10  22 35  70
+
+// MARK: - Running the Code
+
+// Test Binary Tree Traversals
+print("📌 Binary Tree Traversals:")
+print("In-Order (Left -> Root -> Right):", terminator: " ")
+inOrderTraversal(root) // Output: 40 20 10 30 50
+print()
+
+print("Pre-Order (Root -> Left -> Right):", terminator: " ")
+preOrderTraversal(root) // Output: 10 20 40 30 50
+print()
+
+print("Post-Order (Left -> Right -> Root):", terminator: " ")
+postOrderTraversal(root) // Output: 40 20 50 30 10
+print()
+
+// Test BST Traversals
+print("\n📌 Binary Search Tree Traversals:")
+print("In-Order (Sorted Order):", terminator: " ")
+inOrderTraversal(bstRoot) // Output: 10 15 22 25 35 50 70
+print()
+
+print("Pre-Order:", terminator: " ")
+preOrderTraversal(bstRoot) // Output: 25 15 10 22 50 35 70
+print()
+
+print("Post-Order:", terminator: " ")
+postOrderTraversal(bstRoot) // Output: 10 22 15 35 70 50 25
+print()
+
+// MARK: - Additional Notes
+// 1. In-Order Traversal in BST gives sorted output because of the BST property.
+// 2. The insertBST function places equal values in the right subtree. To handle duplicates differently, you could:
+//    - Add a check to skip duplicates.
+//    - Store a count in each node for duplicates.
+// 3. Binary Trees are flexible but less efficient for searching compared to BSTs.
+// 4. BSTs are efficient for operations like search, insert, and delete (average O(log n) time complexity).
+// 5. To extend this code, you could add:
+//    - Search function for BST.
+//    - Delete function for BST.
+//    - Height or balance checks for trees.
